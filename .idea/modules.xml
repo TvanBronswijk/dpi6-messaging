@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/dpi6a-messaging.iml" filepath="$PROJECT_DIR$/dpi6a-messaging.iml" />
+      <module fileurl="file://$PROJECT_DIR$/messaging-bank/messaging-bank.iml" filepath="$PROJECT_DIR$/messaging-bank/messaging-bank.iml" />
+      <module fileurl="file://$PROJECT_DIR$/messaging-broker/messaging-broker.iml" filepath="$PROJECT_DIR$/messaging-broker/messaging-broker.iml" />
+      <module fileurl="file://$PROJECT_DIR$/messaging-client/messaging-client.iml" filepath="$PROJECT_DIR$/messaging-client/messaging-client.iml" />
+      <module fileurl="file://$PROJECT_DIR$/messaging-core/messaging-core.iml" filepath="$PROJECT_DIR$/messaging-core/messaging-core.iml" />
+    </modules>
+  </component>
+</project>

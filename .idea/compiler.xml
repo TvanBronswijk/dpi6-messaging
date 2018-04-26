@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="messaging-bank" />
+        <module name="messaging-broker" />
+        <module name="messaging-client" />
+        <module name="messaging-core" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="dpi6a-messaging" target="1.10" />
+      <module name="messaging-bank" target="1.10" />
+      <module name="messaging-broker" target="1.10" />
+      <module name="messaging-client" target="1.10" />
+      <module name="messaging-core" target="1.10" />
+    </bytecodeTargetLevel>
+  </component>
+</project>
