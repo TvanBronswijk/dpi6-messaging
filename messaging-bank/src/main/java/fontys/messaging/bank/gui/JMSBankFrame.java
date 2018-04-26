@@ -27,11 +27,11 @@ public class JMSBankFrame extends JFrame {
     /**
      * Create the frame.
      */
-    public JMSBankFrame() {
+    public JMSBankFrame(String queue) {
         //JMS Init
         try {
             sender = new MessageSender<>("tcp://localhost:61616", Queue.INTEREST_REPLY);
-            reciever = new MessageReciever<>("tcp://localhost:61616", Queue.INTEREST_REQUEST);
+            reciever = new MessageReciever<>("tcp://localhost:61616", queue);
 
             reciever.onMessage(new ObjectMessageListener<>() {
                 @Override

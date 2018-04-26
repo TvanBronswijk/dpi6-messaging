@@ -9,7 +9,7 @@ public class Program
     public static void main(String[] args) {
         EventQueue.invokeLater(() -> {
             try {
-                JMSBankFrame frame = new JMSBankFrame();
+                JMSBankFrame frame = new JMSBankFrame(args[0]);
                 frame.setVisible(true);
             } catch (Exception e) {
                 e.printStackTrace();

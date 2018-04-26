@@ -1,5 +1,6 @@
 package fontys.messaging.broker.gui;
 
+import fontys.messaging.broker.wrapper.Banks;
 import fontys.messaging.core.messaging.Queue;
 import fontys.messaging.core.messaging.gateway.MessageReciever;
 import fontys.messaging.core.messaging.gateway.MessageSender;
@@ -9,6 +10,7 @@ import fontys.messaging.core.model.bank.BankInterestReply;
 import fontys.messaging.core.model.bank.BankInterestRequest;
 import fontys.messaging.core.model.loan.LoanReply;
 import fontys.messaging.core.model.loan.LoanRequest;
+import net.sourceforge.jeval.EvaluationException;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -16,6 +18,7 @@ import javax.jms.ObjectMessage;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.util.Comparator;
 
 
 public class LoanBrokerFrame extends JFrame {
@@ -25,13 +28,10 @@ public class LoanBrokerFrame extends JFrame {
     private DefaultListModel<JListLine> listModel = new DefaultListModel<>();
     private JList<JListLine> list;
 
-    private static MessageSender<BankInterestRequest> bankSender;
-    private static MessageReciever<BankInterestReply> bankReciever;
+    private static Banks banks;
 
     private static MessageReciever<LoanRequest> clientReciever;
     private static MessageSender<LoanReply> clientSender;
-
-
 
     /**
      * Create the frame.
@@ -39,8 +39,7 @@ public class LoanBrokerFrame extends JFrame {
     public LoanBrokerFrame() {
         //JMS Init
         try {
-            bankSender = new MessageSender<>("tcp://localhost:61616", Queue.INTEREST_REQUEST);
-            bankReciever = new MessageReciever<>("tcp://localhost:61616", Queue.INTEREST_REPLY);
+            banks = new Banks();
 
             clientReciever = new MessageReciever<>("tcp://localhost:61616", Queue.LOAN_REQUEST);
             clientSender = new MessageSender<>("tcp://localhost:61616", Queue.LOAN_REPLY);
@@ -49,26 +48,32 @@ public class LoanBrokerFrame extends JFrame {
                 @Override
                 public void onMessage(Message message) {
                     var clientRequest = parse(message);
-                    add(clientRequest);
                     System.out.println("Message Recieved [Client]");
 
                     var bankRequest = new BankInterestRequest(clientRequest);
-                    bankSender.Send(bankRequest);
-                    add(clientRequest, bankRequest);
-                    System.out.println("Message Sent [Bank]");
+                    int sent = 0;
+                    try {
+                        sent = banks.send(bankRequest);
+                        add(clientRequest, sent);
+                        System.out.println("Message Sent [Bank]");
+                    } catch (EvaluationException e) {
+                        e.printStackTrace();
+                    }
                 }
             });
 
-            bankReciever.onMessage(new ObjectMessageListener<>() {
+            banks.onMessage(new ObjectMessageListener<>() {
                 @Override
                 public void onMessage(Message message) {
                     var bankReply = parse(message);
                     System.out.println("Message Recieved [Bank]");
-                    var clientReply = new LoanReply(bankReply);
-                    clientSender.Send(clientReply);
-                    System.out.println("Message Sent [Client]");
-                    add(bankReply.getRequest().getBaseRequest(), bankReply);
-
+                    var line = add(bankReply.getRequest().getBaseRequest(), bankReply);
+                    if(line.getBankReplies().size() == line.getRequestsSent()) {
+                        var lowest = line.getBankReplies().stream().min(Comparator.comparingDouble(BankInterestReply::getInterest));
+                        var clientReply = new LoanReply(lowest.get());
+                        clientSender.Send(clientReply);
+                        System.out.println("Message Sent [Client]");
+                    }
                 }
             });
         } catch (JMSException e) {
@@ -102,36 +107,26 @@ public class LoanBrokerFrame extends JFrame {
 
     private JListLine getRequestReply(LoanRequest request) {
 
-        for (int i = 0; i < listModel.getSize(); i++) {
+        for (int i = listModel.getSize() - 1; i >= 0; i--) {
             JListLine rr = listModel.get(i);
             if (rr.getLoanRequest().equals(request)) {
                 return rr;
             }
         }
-
         return null;
     }
 
-    public void add(LoanRequest loanRequest) {
-        listModel.addElement(new JListLine(loanRequest));
+    public void add(LoanRequest loanRequest, int requestsSent) {
+        listModel.addElement(new JListLine(loanRequest, requestsSent));
     }
 
-
-    public void add(LoanRequest loanRequest, BankInterestRequest bankRequest) {
-        JListLine rr = getRequestReply(loanRequest);
-        if (rr != null && bankRequest != null) {
-            rr.setBankRequest(bankRequest);
-            list.repaint();
-        }
-    }
-
-    public void add(LoanRequest loanRequest, BankInterestReply bankReply) {
+    public JListLine add(LoanRequest loanRequest, BankInterestReply bankReply) {
         JListLine rr = getRequestReply(loanRequest);
         if (rr != null && bankReply != null) {
-            rr.setBankReply(bankReply);
-            ;
+            rr.addBankReply(bankReply);
             list.repaint();
         }
+        return rr;
     }
 
 

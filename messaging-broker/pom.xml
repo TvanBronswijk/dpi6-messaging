@@ -17,5 +17,9 @@
             <groupId>fontys</groupId>
             <artifactId>messaging-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>net.sourceforge.jeval</groupId>
+            <artifactId>jeval</artifactId>
+        </dependency>
     </dependencies>
 </project>
